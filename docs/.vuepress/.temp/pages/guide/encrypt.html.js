@@ -44,6 +44,13 @@ export const data = {
       [
         "meta",
         {
+          "property": "og:updated_time",
+          "content": "2022-06-07T16:14:34.000Z"
+        }
+      ],
+      [
+        "meta",
+        {
           "property": "og:locale",
           "content": "en-US"
         }
@@ -61,27 +68,32 @@ export const data = {
           "property": "article:tag",
           "content": "encryption"
         }
+      ],
+      [
+        "meta",
+        {
+          "property": "article:modified_time",
+          "content": "2022-06-07T16:14:34.000Z"
+        }
       ]
     ]
   },
   "excerpt": "",
   "headers": [],
+  "git": {
+    "createdTime": 1654618474000,
+    "updatedTime": 1654618474000,
+    "contributors": [
+      {
+        "name": "jessnzz",
+        "email": "z6929@outlook.com",
+        "commits": 1
+      }
+    ]
+  },
   "readingTime": {
     "minutes": 0.28,
     "words": 84
   },
   "filePathRelative": "guide/encrypt.md"
-}
-
-if (import.meta.webpackHot) {
-  import.meta.webpackHot.accept()
-  if (__VUE_HMR_RUNTIME__.updatePageData) {
-    __VUE_HMR_RUNTIME__.updatePageData(data)
-  }
-}
-
-if (import.meta.hot) {
-  import.meta.hot.accept(({ data }) => {
-    __VUE_HMR_RUNTIME__.updatePageData(data)
-  })
 }

@@ -58,6 +58,13 @@ export const data = {
       [
         "meta",
         {
+          "property": "og:updated_time",
+          "content": "2022-06-07T16:14:34.000Z"
+        }
+      ],
+      [
+        "meta",
+        {
           "property": "og:locale",
           "content": "en-US"
         }
@@ -75,27 +82,32 @@ export const data = {
           "property": "article:tag",
           "content": "disable"
         }
+      ],
+      [
+        "meta",
+        {
+          "property": "article:modified_time",
+          "content": "2022-06-07T16:14:34.000Z"
+        }
       ]
     ]
   },
   "excerpt": "<p>You can disable some function and layout on the page by setting the Frontmatter of the page.</p>\n",
   "headers": [],
+  "git": {
+    "createdTime": 1654618474000,
+    "updatedTime": 1654618474000,
+    "contributors": [
+      {
+        "name": "jessnzz",
+        "email": "z6929@outlook.com",
+        "commits": 1
+      }
+    ]
+  },
   "readingTime": {
     "minutes": 0.16,
     "words": 47
   },
   "filePathRelative": "guide/disable.md"
-}
-
-if (import.meta.webpackHot) {
-  import.meta.webpackHot.accept()
-  if (__VUE_HMR_RUNTIME__.updatePageData) {
-    __VUE_HMR_RUNTIME__.updatePageData(data)
-  }
-}
-
-if (import.meta.hot) {
-  import.meta.hot.accept(({ data }) => {
-    __VUE_HMR_RUNTIME__.updatePageData(data)
-  })
 }
