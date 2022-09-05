@@ -223,15 +223,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
         
-        <a href="/2022/09/02/hello-world/" target="_self">
-          Hello World
+        <a href="/2021/12/26/%E5%BC%82%E6%AD%A5%E8%AF%B7%E6%B1%82%E5%88%9D%E5%A7%8B%E5%8C%96%E6%97%B6%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%8F%96%E9%97%AE%E9%A2%98/" target="_self">
+          异步请求初始化时数据读取问题
         </a>
       </h1>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2022/09/02/hello-world/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2021/12/26/%E5%BC%82%E6%AD%A5%E8%AF%B7%E6%B1%82%E5%88%9D%E5%A7%8B%E5%8C%96%E6%97%B6%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%8F%96%E9%97%AE%E9%A2%98/" target="_self">
         <div>
-          Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick
+          为了解决这个问题，我们首先需要了解最佳异步请求的时机 最佳异步请求的时机我们到底该在什么情况下选择created,而又在什么情况下选择updated?  对于作为子组件被调用的组件里，异步请求应当在mounted里调用，因为这个时候子组件可能需要涉及到对dom的操作； 对于页面级组件，当我们需要使用ssr（服务端渲染）的时候，只有created是可用的，所以这个时候请求数据只能用它； 对于页面级组
         </div>
       </a>
 
@@ -239,12 +239,414 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2022-09-02 16:07" pubdate>
-              2022-09-02
+            <time datetime="2021-12-26 16:13" pubdate>
+              2021-12-26
             </time>
           </div>
         
         
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Vue/" class="category-chain-item">Vue</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E9%97%AE%E9%A2%98/">#问题</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/12/19/npm%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" target="_self">
+          npm常用命令
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2021/12/19/npm%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" target="_self">
+        <div>
+          NPM命令详解平时工作中经常用npm安装，每次用的时候有些命令都要去查一次，这次就自己把这些命令整理下，让自己可以多记住一些。对于还不知道NPM是什么的同学请自行google吧 这里我就不多BB了，主要记录一下NPM几个常用命令和参数的意思 安装模块如不指定版本号 默认会安装最新的版本npm install packagename  安装指定版本的模块npm install packagename
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-12-19 01:21" pubdate>
+              2021-12-19
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%85%B6%E4%BB%96/" class="category-chain-item">其他</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E6%8A%80%E5%B7%A7/">#技巧</a>
+            
+              <a href="/tags/Node-js/">#Node.js</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/12/14/action%E4%B8%AD%E7%9A%84%E8%A7%A3%E6%9E%84%E8%B5%8B%E5%80%BC%E7%96%91%E6%83%91/" target="_self">
+          action中的解构赋值疑惑
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2021/12/14/action%E4%B8%AD%E7%9A%84%E8%A7%A3%E6%9E%84%E8%B5%8B%E5%80%BC%E7%96%91%E6%83%91/" target="_self">
+        <div>
+          当时看到了这样一个问题 12345actions: &amp;#123;  increment (&amp;#123; commit &amp;#125;) &amp;#123;    commit(&amp;#x27;INCREMENT&amp;#x27;)  &amp;#125;&amp;#125;  看到action中increment函数的参数写成这样，当场就疑惑了，这个结构赋值的对象是谁呢查找资料后发现 在vuex的api中action的部分有这样一
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-12-14 21:39" pubdate>
+              2021-12-14
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Vue/" class="category-chain-item">Vue</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E9%97%AE%E9%A2%98/">#问题</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/12/13/vue%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B%E8%A7%A3%E5%86%B3promise%E6%8A%A5%E9%94%99%E9%97%AE%E9%A2%98/" target="_self">
+          vue函数式编程解决promise报错问题
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2021/12/13/vue%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B%E8%A7%A3%E5%86%B3promise%E6%8A%A5%E9%94%99%E9%97%AE%E9%A2%98/" target="_self">
+        <div>
+          问题 出现原因对于目前的VueRouter的版本而言，其底层时用的promise函数写的，而promise函数执行需要两个回调，一个成功的回调，和一个失败的回调。vue底层设计时声明式编程已经完善了promise的回调，而函数式编程并没有进行维护，此时当多次触发函数时就会出现上图错误 解决方法重写push、replace方法 12345678910111213&#x2F;&#x2F;重写vueRouter原型对象的p
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-12-13 21:39" pubdate>
+              2021-12-13
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Javascript/" class="category-chain-item">Javascript</a>
+  
+  
+
+      </span>
+    
+  
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E9%97%AE%E9%A2%98/">#问题</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/12/13/Hexo%E5%8D%9A%E5%AE%A2%E9%83%A8%E7%BD%B2%E6%81%A2%E5%A4%8D/" target="_self">
+          Hexo博客部署恢复
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2021/12/13/Hexo%E5%8D%9A%E5%AE%A2%E9%83%A8%E7%BD%B2%E6%81%A2%E5%A4%8D/" target="_self">
+        <div>
+          一、安装 node.js 和 git for windows二、配置 git 个人信息，生成新的 ssh 密钥：git config --global user.name &quot;helloqingfeng&quot; git config --global user.email &quot;128994000@qq.com&quot; ssh-keygen -t rsa -C &quot;1
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-12-13 20:40" pubdate>
+              2021-12-13
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%85%B6%E4%BB%96/" class="category-chain-item">其他</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/github/">#github</a>
+            
+              <a href="/tags/hexo/">#hexo</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/12/13/github%E6%90%9C%E7%B4%A2/" target="_self">
+          github搜索
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2021/12/13/github%E6%90%9C%E7%B4%A2/" target="_self">
+        <div>
+          Github搜索技巧in:name按照项目名称搜索 eg：搜索项目名称里带mall(商城)的项目     in:name mall  in:description按照描述搜索 eg：搜索描述里带spring的项目     in:description spring  in:readme按照项目介绍进行搜索 eg：搜索项目介绍里带spring的项目     in:readme spring  sta
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-12-13 20:31" pubdate>
+              2021-12-13
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%85%B6%E4%BB%96/" class="category-chain-item">其他</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/github/">#github</a>
+            
+              <a href="/tags/%E6%8A%80%E5%B7%A7/">#技巧</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/12/13/call%E3%80%81apply%E3%80%81bind%E6%B5%85%E6%9E%90/" target="_self">
+          call、apply、bind浅析
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2021/12/13/call%E3%80%81apply%E3%80%81bind%E6%B5%85%E6%9E%90/" target="_self">
+        <div>
+          call(thisArgs [,args…])该方法可以传递一个thisArgs参数和一个参数列表，thisArgs 指定了函数在运行期的调用者，也就是函数中的 this 对象，而参数列表会被传入调用函数中。thisArgs 的取值有以下四种情况：  不传，或者传null,undefined， 函数中的 this 指向window对象 传递另一个函数的函数名，函数中的 this 指向这个函数的引用
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-12-13 19:20" pubdate>
+              2021-12-13
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Javascript/" class="category-chain-item">Javascript</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E5%87%BD%E6%95%B0/">#函数</a>
+            
+          </div>
         
       </div>
     </article>

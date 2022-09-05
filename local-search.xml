@@ -4,13 +4,183 @@
   
   
   <entry>
-    <title>Hello World</title>
-    <link href="/2022/09/02/hello-world/"/>
-    <url>/2022/09/02/hello-world/</url>
+    <title>异步请求初始化时数据读取问题</title>
+    <link href="/2021/12/26/%E5%BC%82%E6%AD%A5%E8%AF%B7%E6%B1%82%E5%88%9D%E5%A7%8B%E5%8C%96%E6%97%B6%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%8F%96%E9%97%AE%E9%A2%98/"/>
+    <url>/2021/12/26/%E5%BC%82%E6%AD%A5%E8%AF%B7%E6%B1%82%E5%88%9D%E5%A7%8B%E5%8C%96%E6%97%B6%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%8F%96%E9%97%AE%E9%A2%98/</url>
     
-    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo new <span class="hljs-string">&quot;My New Post&quot;</span><br></code></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo server<br></code></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo generate<br></code></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo deploy<br></code></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
+    <content type="html"><![CDATA[<p>为了解决这个问题，我们首先需要了解最佳异步请求的时机</p><h1 id="最佳异步请求的时机"><a href="#最佳异步请求的时机" class="headerlink" title="最佳异步请求的时机"></a>最佳异步请求的时机</h1><p>我们到底该在什么情况下选择created,而又在什么情况下选择updated?</p><ol><li>对于作为子组件被调用的组件里，异步请求应当在mounted里调用，因为这个时候子组件可能需要涉及到对dom的操作；</li><li>对于页面级组件，当我们需要使用ssr（服务端渲染）的时候，只有created是可用的，所以这个时候请求数据只能用它；</li><li>对于页面级组件， 当我们做异步操作时，涉及到要访问dom的操作，我们仍旧只能使用mounted;</li><li>对于一般情况，created和mounted都是可以的；</li></ol><p>补充一点，在mounted被调用时，vue不保证子组件也都被挂载完毕了，所以如果希望整个视图渲染完毕再执行操作，需要使用$nexttick,使用方法如下：</p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-title function_">mounted</span>(<span class="hljs-params"></span>) &#123;<br>  <span class="hljs-variable language_">this</span>.$nextTick(<span class="hljs-function">()=&gt;</span>&#123;<br>      <span class="hljs-comment">//code...</span><br>  &#125;)<br>&#125;<br></code></pre></td></tr></table></figure><p><code>$nexttick</code>本身会接收一个回调函数，它实际上会让里面的代码延时执行，类似于setTimeout。</p><h1 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h1><p><strong><code>“Error in render: &quot;TypeError: Cannot read properties of undefined (reading &#39;0&#39;)&quot;”</code>渲染错误问题</strong></p><p><img src="/../img/%E6%A8%A1%E6%9D%BF%E5%88%9D%E5%A7%8B%E5%8C%96%E6%97%B6%E6%B8%B2%E6%9F%93%E9%94%99%E8%AF%AF.png" alt="模板初始化时渲染错误"></p><h2 id="出现原因"><a href="#出现原因" class="headerlink" title="出现原因"></a>出现原因</h2><p>axios向服务器请求了数据之后，模板编译的过程中一开始数据是为空数据，<br>这里的意思就是模板在渲染时候，读取对象中的某个对象的属性值时，这个对象不存在，通俗点就是三层表达式a.b.c，在对象a中没有对象b，那么读取对象a.b.c中的值，自然会报错。如果是两层表达式a.b则不会报错，返回的是undefined。</p><h2 id="分析问题"><a href="#分析问题" class="headerlink" title="分析问题"></a>分析问题</h2><p>我们发现这里的info是<code>vuex</code>中state管理加载的数据，异步调用显示，然后vue渲染机制中：异步数据先显示初始数据，再显示带数据的数据，<br>所以上来加载info时候还是一个空对象如下,当渲染完成后，才加载异步数据,<br>所以在渲染时，出现的三层表达式在<code>info</code>中取<code>quotes[n]</code>数组中的小标为<code>n</code>的对象还不存在，再在这个对象中取其他值自然会报错，但是渲染完成后，<code>info</code>中的值加载好了，自然可以取到，这也就解释了为什么界面正常显示，但开发者工具会报错的原因。</p><h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><ol><li>给标签添加<code>v-if</code>判断条件，如果<code>info.quotes</code>取不到，则不加载该标签即可解决。（注意，不能用v-show，v-show的机制是加载后，根据条件判断是否显示）</li><li>在computed里面，使用判断语句<code>if (this.info.quotes)</code> 返回<code>&#123;this.info.quotes[0].quote&#125;</code>，效果等同于法1，但有缺陷，没有进入判断时会执行另外的语句，页面上会短暂的显示出内容。（不推荐）</li></ol><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;box&quot;</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;text&quot;</span> <span class="hljs-attr">v-if</span>=<span class="hljs-string">&quot;info.quotes&quot;</span>&gt;</span>&#123;&#123; quote &#125;&#125;<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;author&quot;</span> <span class="hljs-attr">v-if</span>=<span class="hljs-string">&quot;info.quotes&quot;</span>&gt;</span>&#123;&#123; author &#125;&#125;<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">el-row</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">el-button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;new-quote&quot;</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;changeInfo()&quot;</span>&gt;</span>默认按钮<span class="hljs-tag">&lt;/<span class="hljs-name">el-button</span>&gt;</span><br>  <span class="hljs-tag">&lt;/<span class="hljs-name">el-row</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br></code></pre></td></tr></table></figure><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">import</span> axios <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;axios&quot;</span>;<br><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> &#123;<br>  <span class="hljs-attr">name</span>: <span class="hljs-string">&quot;Word&quot;</span>,<br>  <span class="hljs-title function_">data</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-keyword">return</span> &#123;<br>      <span class="hljs-attr">info</span>: &#123;&#125;,<br>      <span class="hljs-attr">n</span>: <span class="hljs-number">0</span>,<br>    &#125;;<br>  &#125;,<br>  <span class="hljs-attr">computed</span>: &#123;<br>    <span class="hljs-title function_">quote</span>(<span class="hljs-params"></span>) &#123;<br>      <span class="hljs-keyword">return</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">info</span>.<span class="hljs-property">quotes</span>[<span class="hljs-variable language_">this</span>.<span class="hljs-property">n</span>].<span class="hljs-property">quote</span>;<br>    &#125;,<br>    <span class="hljs-title function_">author</span>(<span class="hljs-params"></span>) &#123;<br>      <span class="hljs-keyword">return</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">info</span>.<span class="hljs-property">quotes</span>[<span class="hljs-variable language_">this</span>.<span class="hljs-property">n</span>].<span class="hljs-property">author</span>;<br>    &#125;,<br>  &#125;,<br>  <span class="hljs-attr">methods</span>: &#123;<br>    <span class="hljs-title function_">changeInfo</span>(<span class="hljs-params"></span>) &#123;<br>      <span class="hljs-variable language_">this</span>.<span class="hljs-property">n</span> = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">floor</span>(<span class="hljs-title class_">Math</span>.<span class="hljs-title function_">random</span>() * <span class="hljs-variable language_">this</span>.<span class="hljs-property">info</span>.<span class="hljs-property">quotes</span>.<span class="hljs-property">length</span>);<br>    &#125;,<br>  &#125;,<br>  <span class="hljs-title function_">mounted</span>(<span class="hljs-params"></span>) &#123;<br>    axios.<span class="hljs-title function_">get</span>(<br>        <span class="hljs-string">&quot;https://gist.githubusercontent.com/camperbot/5a022b72e96c4c9585c32bf6a75f62d9/raw/e3c6895ce42069f0ee7e991229064f167fe8ccdc/quotes.json&quot;</span>)<br>            .<span class="hljs-title function_">then</span>(<span class="hljs-function">(<span class="hljs-params">response</span>) =&gt;</span> &#123;<br>        <span class="hljs-variable language_">this</span>.<span class="hljs-property">info</span> = response.<span class="hljs-property">data</span>;<br>      &#125;);<br>  &#125;,<br>&#125;;<br></code></pre></td></tr></table></figure>]]></content>
     
     
+    <categories>
+      
+      <category>Vue</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>问题</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>npm常用命令</title>
+    <link href="/2021/12/19/npm%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/"/>
+    <url>/2021/12/19/npm%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/</url>
+    
+    <content type="html"><![CDATA[<h1 id="NPM命令详解"><a href="#NPM命令详解" class="headerlink" title="NPM命令详解"></a>NPM命令详解</h1><p>平时工作中经常用npm安装，每次用的时候有些命令都要去查一次，这次就自己把这些命令整理下，让自己可以多记住一些。<br>对于还不知道NPM是什么的同学请自行google吧 这里我就不多BB了，主要记录一下NPM几个常用命令和参数的意思</p><h2 id="安装模块如不指定版本号-默认会安装最新的版本"><a href="#安装模块如不指定版本号-默认会安装最新的版本" class="headerlink" title="安装模块如不指定版本号 默认会安装最新的版本"></a>安装模块如不指定版本号 默认会安装最新的版本</h2><pre><code class="hljs">npm install packagename</code></pre><h2 id="安装指定版本的模块"><a href="#安装指定版本的模块" class="headerlink" title="安装指定版本的模块"></a>安装指定版本的模块</h2><pre><code class="hljs">npm install packagename 0.0.1</code></pre><h2 id="初始化package-json"><a href="#初始化package-json" class="headerlink" title="初始化package.json"></a>初始化<code>package.json</code></h2><pre><code class="hljs">npm init</code></pre><blockquote><p>这个命令会在当前目录生成一个package.json文件，这个文件中会记录一些关于项目的信息，比如：项目的作者，git地址，入口文件、命令设置、项目名称和版本号等等，一般情况下这个文件是必须要有的，方便后续的项目添加和其他开发人员的使用。</p></blockquote><h2 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h2><h3 id="–save、-S参数"><a href="#–save、-S参数" class="headerlink" title="–save、-S参数"></a>–save、-S参数</h3><pre><code class="hljs">npm install packagename --save 或 -S</code></pre><blockquote><p>–save、-S参数意思是把模块的版本信息保存到dependencies（生产环境依赖）中，即你的package.json文件的dependencies字段中；</p></blockquote><h3 id="–save-dev、-D参数"><a href="#–save-dev、-D参数" class="headerlink" title="–save-dev、-D参数"></a>–save-dev、-D参数</h3><pre><code class="hljs">npm install packagename --save-dev 或 -D</code></pre><blockquote><p>–save-dev 、 -D参数意思是吧模块版本信息保存到devDependencies（开发环境依赖）中，即你的package.json文件的devDependencies字段中；</p></blockquote><h3 id="–save-optional、-O参数"><a href="#–save-optional、-O参数" class="headerlink" title="–save-optional、-O参数"></a>–save-optional、-O参数</h3><pre><code class="hljs">npm install packagename --save-optional 或 -O</code></pre><blockquote><p>–save-optional 、 -O参数意思是把模块安装到optionalDependencies（可选环境依赖）中，即你的package.json文件的optionalDependencies字段中。</p></blockquote><h3 id="–save-exact、-E参数"><a href="#–save-exact、-E参数" class="headerlink" title="–save-exact、-E参数"></a>–save-exact、-E参数</h3><pre><code class="hljs">npm install packagename --save-exact 或 -E</code></pre><blockquote><p>–save-exact 、 -E参数的意思是精确的安装指定版本的模块，细心的同学会发现dependencies字段里每个模块版本号前面的^不见鸟。。。</p></blockquote><p><strong>如果你打开的是别人的项目，这个时候一般是没有任何依赖包的，但是所以需要的包已在package.json里面写好了，这个时候我们就可以使用npm install来安装所有项目中需要的依赖包了</strong></p><h2 id="安装全局的模块（不加参数的时候默认安装本地模块）"><a href="#安装全局的模块（不加参数的时候默认安装本地模块）" class="headerlink" title="安装全局的模块（不加参数的时候默认安装本地模块）"></a>安装全局的模块（不加参数的时候默认安装本地模块）</h2><pre><code class="hljs">npm install packagename -g 或 --global</code></pre><h2 id="查看已安装模块"><a href="#查看已安装模块" class="headerlink" title="查看已安装模块"></a>查看已安装模块</h2><pre><code class="hljs">npm list 或 npm ll 或 npm la 或 npm ls</code></pre><blockquote><p>查看所有已经安装的模块 ll 、 ls 、 la 三个命令意思都一样 但是列表的展示方式不一样 喜欢用哪个就看个人喜好了。<code>-g</code> 查看全局已安装模块</p></blockquote><h2 id="卸载模块"><a href="#卸载模块" class="headerlink" title="卸载模块"></a>卸载模块</h2><pre><code class="hljs">npm uninstall packagename [options]</code></pre><blockquote><p>卸载已经安装的模块，后面的options参数意思与安装时候的意思一样,与这个命令相同的还有npm remove 、npm rm、npm r 、 npm un 、 npm unlink 这几个命令功能和npm uninstall基本一样，个人觉得没什么区别。</p></blockquote><h2 id="查看所有过时的模块"><a href="#查看所有过时的模块" class="headerlink" title="查看所有过时的模块"></a>查看所有过时的模块</h2><pre><code class="hljs">npm outdated</code></pre><blockquote><p>这个命令会列出所有已经过时了的模块，对于已经过时了的模块可以使用下面的命令去更新</p></blockquote><h2 id="更新已经安装的模块-或全局的模块"><a href="#更新已经安装的模块-或全局的模块" class="headerlink" title="更新已经安装的模块(或全局的模块)"></a>更新已经安装的模块(或全局的模块)</h2><pre><code class="hljs">npm update [-g]</code></pre><h2 id="查看某条命令的详细帮助"><a href="#查看某条命令的详细帮助" class="headerlink" title="查看某条命令的详细帮助"></a>查看某条命令的详细帮助</h2><pre><code class="hljs">npm help &#39;命令&#39;</code></pre><h2 id="查看命令的绝对路径"><a href="#查看命令的绝对路径" class="headerlink" title="查看命令的绝对路径"></a>查看命令的绝对路径</h2><pre><code class="hljs">npm root</code></pre><h2 id="npm配置"><a href="#npm配置" class="headerlink" title="npm配置"></a>npm配置</h2><pre><code class="hljs">npm config </code></pre><p>设置npm命令的配置路径，这个命令一般用于设置代理，毕竟大部分都是国外的模块，不过个人还是比较喜欢用cnpm 这个命令是用的淘宝的镜像，用法与npm一样，速度还可以。</p><p>除去以上的这些命令外，经常还能见到一些npm start、npm deploy、 npm build等等之类的命令，这些一般都是在package.json 中自定义的一些启动、重启、停止服务之类的命令。可以在package.json文件的scripts字段里自定义。例如：</p><pre><code class="hljs">&quot;scripts&quot;: &#123;    &quot;test&quot;: &quot;echo \&quot;Error: no test specified\&quot; &amp;&amp; exit 1&quot;,    &quot;build&quot;: &quot;webpack&quot;,    &quot;start&quot;: &quot;webpack-dev-server main.js,    &quot;deploy&quot;: &quot;set NODE_ENV=production&quot;&#125;</code></pre><p>关于package.json的详细文档，有兴趣的同学可以参考《package.json中文文档》；</p><h2 id="切换npm源"><a href="#切换npm源" class="headerlink" title="切换npm源"></a>切换npm源</h2><h3 id="安装cnpm插件"><a href="#安装cnpm插件" class="headerlink" title="安装cnpm插件"></a>安装cnpm插件</h3><pre><code class="hljs">npm install -g cnpm --registry=https://registry.npmmirror.com</code></pre><h3 id="设置为淘宝源："><a href="#设置为淘宝源：" class="headerlink" title="设置为淘宝源："></a>设置为淘宝源：</h3><pre><code class="hljs">npm config set registry https://registry.npmmirror.com</code></pre><h3 id="设置为默认源："><a href="#设置为默认源：" class="headerlink" title="设置为默认源："></a>设置为默认源：</h3><pre><code class="hljs">npm config set registry https://registry.npmjs.org/</code></pre><h3 id="检查当前源"><a href="#检查当前源" class="headerlink" title="检查当前源"></a>检查当前源</h3><pre><code class="hljs">npm get registry </code></pre><hr><h2 id="yarn"><a href="#yarn" class="headerlink" title="yarn"></a>yarn</h2><h3 id="设置为淘宝源：-1"><a href="#设置为淘宝源：-1" class="headerlink" title="设置为淘宝源："></a>设置为淘宝源：</h3><pre><code class="hljs">yarn config set registry https://registry.npmmirror.com</code></pre><h3 id="设置为默认源：-1"><a href="#设置为默认源：-1" class="headerlink" title="设置为默认源："></a>设置为默认源：</h3><pre><code class="hljs">yarn config set registry https://registry.yarnpkg.com</code></pre>]]></content>
+    
+    
+    <categories>
+      
+      <category>其他</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>技巧</tag>
+      
+      <tag>Node.js</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>action中的解构赋值疑惑</title>
+    <link href="/2021/12/14/action%E4%B8%AD%E7%9A%84%E8%A7%A3%E6%9E%84%E8%B5%8B%E5%80%BC%E7%96%91%E6%83%91/"/>
+    <url>/2021/12/14/action%E4%B8%AD%E7%9A%84%E8%A7%A3%E6%9E%84%E8%B5%8B%E5%80%BC%E7%96%91%E6%83%91/</url>
+    
+    <content type="html"><![CDATA[<p>当时看到了这样一个问题</p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-attr">actions</span>: &#123;<br>  increment (&#123; commit &#125;) &#123;<br>    <span class="hljs-title function_">commit</span>(<span class="hljs-string">&#x27;INCREMENT&#x27;</span>)<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure><p>看到action中increment函数的参数写成这样，当场就疑惑了，这个结构赋值的对象是谁呢<br>查找资料后发现</p><p>在vuex的api中action的部分有这样一句话“处理函数总是接受 context 作为第一个参数，payload 作为第二个参数（可选）”。</p><p><img src="/../img/vuex%E4%B8%ADactions%E7%9A%84%E5%8F%82%E6%95%B0%E7%BB%93%E6%9E%84.png" alt="actions参数解构"></p><p><code>action</code>中的函数会默认自动获取<code>context</code>这个对象为第一个参数。<br>而<code>context</code>这个对象拥有和<code>store</code>相同的属性和方法，但它不等同于<code>store</code>。从图中可以看到。<br>而<code>increment (&#123; commit &#125;)</code> { … }中的参数对象{…}就是指的<code>context</code>对象，而<code>&#123; commit &#125;</code>就是指的<code>context</code>对象中的<code>commit方法</code>.</p><p>没有简化的写法是：</p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-attr">actions</span>: &#123;<br>  increment (context) &#123;<br>    context.<span class="hljs-title function_">commit</span>(<span class="hljs-string">&#x27;INCREMENT&#x27;</span>)<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-attr">actions</span>:&#123;<br>   increment ( &#123;commit&#125; = context )&#123;<br>       <span class="hljs-title function_">commit</span>(<span class="hljs-string">&#x27;increment&#x27;</span>)<br>   &#125;<br>&#125;<br></code></pre></td></tr></table></figure>]]></content>
+    
+    
+    <categories>
+      
+      <category>Vue</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>问题</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>vue函数式编程解决promise报错问题</title>
+    <link href="/2021/12/13/vue%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B%E8%A7%A3%E5%86%B3promise%E6%8A%A5%E9%94%99%E9%97%AE%E9%A2%98/"/>
+    <url>/2021/12/13/vue%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B%E8%A7%A3%E5%86%B3promise%E6%8A%A5%E9%94%99%E9%97%AE%E9%A2%98/</url>
+    
+    <content type="html"><![CDATA[<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p><img src="/../img/promise.png" alt="报错详情"></p><h2 id="出现原因"><a href="#出现原因" class="headerlink" title="出现原因"></a>出现原因</h2><p>对于目前的VueRouter的版本而言，其底层时用的promise函数写的，而promise函数执行需要两个回调，一个成功的回调，和一个失败的回调。vue底层设计时声明式编程已经完善了promise的回调，而函数式编程并没有进行维护，此时当多次触发函数时就会出现上图错误</p><h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><p>重写<code>push</code>、<code>replace</code>方法</p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">//重写vueRouter原型对象的push方法，解决函数式编程时多次点击报错</span><br><span class="hljs-comment">//保存vueRoter原型对象的push方法，</span><br><span class="hljs-keyword">let</span> originPush = <span class="hljs-title class_">VueRouter</span>.<span class="hljs-property"><span class="hljs-keyword">prototype</span></span>.<span class="hljs-property">push</span>;<br><span class="hljs-comment">//参数一，往哪里跳转（传递那些参数）</span><br><span class="hljs-comment">//参数二，成功回调</span><br><span class="hljs-comment">//参数三，失败回调</span><br><span class="hljs-title class_">VueRouter</span>.<span class="hljs-property"><span class="hljs-keyword">prototype</span></span>.<span class="hljs-property">push</span> = <span class="hljs-keyword">function</span> (<span class="hljs-params">location, resolve, reject</span>) &#123;<br>    <span class="hljs-keyword">if</span> (resolve &amp;&amp; reject) &#123;<br>        originPush.<span class="hljs-title function_">call</span>(<span class="hljs-variable language_">this</span>, location, resolve, reject)<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        originPush.<span class="hljs-title function_">call</span>(<span class="hljs-variable language_">this</span>, location, <span class="hljs-function">() =&gt;</span> &#123; &#125;, <span class="hljs-function">() =&gt;</span> &#123; &#125;)<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">let</span> originReplace = <span class="hljs-title class_">VueRouter</span>.<span class="hljs-property"><span class="hljs-keyword">prototype</span></span>.<span class="hljs-property">replace</span>;<br><span class="hljs-title class_">VueRouter</span>.<span class="hljs-property"><span class="hljs-keyword">prototype</span></span>.<span class="hljs-property">replace</span> = <span class="hljs-keyword">function</span> (<span class="hljs-params">location, resolve, reject</span>) &#123;<br>    <span class="hljs-keyword">if</span> (resolve &amp;&amp; reject) &#123;<br>        originReplace.<span class="hljs-title function_">call</span>(<span class="hljs-variable language_">this</span>, location, resolve, reject)<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        originReplace.<span class="hljs-title function_">call</span>(<span class="hljs-variable language_">this</span>, location, <span class="hljs-function">() =&gt;</span> &#123; &#125;, <span class="hljs-function">() =&gt;</span> &#123; &#125;)<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>]]></content>
+    
+    
+    <categories>
+      
+      <category>Javascript</category>
+      
+      <category>Vue</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>问题</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Hexo博客部署恢复</title>
+    <link href="/2021/12/13/Hexo%E5%8D%9A%E5%AE%A2%E9%83%A8%E7%BD%B2%E6%81%A2%E5%A4%8D/"/>
+    <url>/2021/12/13/Hexo%E5%8D%9A%E5%AE%A2%E9%83%A8%E7%BD%B2%E6%81%A2%E5%A4%8D/</url>
+    
+    <content type="html"><![CDATA[<h1 id="一、安装-node-js-和-git-for-windows"><a href="#一、安装-node-js-和-git-for-windows" class="headerlink" title="一、安装 node.js 和 git for windows"></a>一、安装 node.js 和 git for windows</h1><h1 id="二、配置-git-个人信息，生成新的-ssh-密钥："><a href="#二、配置-git-个人信息，生成新的-ssh-密钥：" class="headerlink" title="二、配置 git 个人信息，生成新的 ssh 密钥："></a>二、配置 git 个人信息，生成新的 ssh 密钥：</h1><pre><code class="hljs">git config --global user.name &quot;helloqingfeng&quot;git config --global user.email &quot;128994000@qq.com&quot;ssh-keygen -t rsa -C &quot;128994000@qq.com&quot;</code></pre><p>邮件地址和用户名换成自己的，然后一路回车，使用默认值即可。</p><p>如果一切顺利的话，可以在用户主目录里找到.ssh目录，里面有id_rsa和id_rsa.pub两个文件，打开id_rsa.pub文件，复制里面的内容。</p><h1 id="三、生成ssh密钥"><a href="#三、生成ssh密钥" class="headerlink" title="三、生成ssh密钥"></a>三、生成ssh密钥</h1><p>将生成的ssh公钥（刚复制的内容）复制到Github的settings里面的ssh选项里去。（参考GitHub教程：新增 SSH 密钥到 GitHub 帐户）</p><h1 id="四、安装Hexo"><a href="#四、安装Hexo" class="headerlink" title="四、安装Hexo"></a>四、安装Hexo</h1><pre><code class="hljs">npm install hexo-cli -g</code></pre><h1 id="五、移除已存在的文件"><a href="#五、移除已存在的文件" class="headerlink" title="五、移除已存在的文件"></a>五、移除已存在的文件</h1><p>打开原来的hexo博客所在文件夹，只需保留_config.yml，theme&#x2F;，source&#x2F;，scaffolds&#x2F;，package.json，.gitignore 这些项目，删除其他的文件。</p><h1 id="六、然后打开-git-bush-运行命令："><a href="#六、然后打开-git-bush-运行命令：" class="headerlink" title="六、然后打开 git bush 运行命令："></a>六、然后打开 git bush 运行命令：</h1><pre><code class="hljs">npm install</code></pre><h1 id="七、安装部署插件："><a href="#七、安装部署插件：" class="headerlink" title="七、安装部署插件："></a>七、安装部署插件：</h1><pre><code class="hljs">npm install hexo-deployer-git --save</code></pre><h1 id="八、接下来直接hexo-g-hexo-d试一下是否成功。"><a href="#八、接下来直接hexo-g-hexo-d试一下是否成功。" class="headerlink" title="八、接下来直接hexo g hexo d试一下是否成功。"></a>八、接下来直接hexo g hexo d试一下是否成功。</h1><pre><code class="hljs">hexo ghexo d</code></pre><p>博客部署恢复完成，可以打开网站看一下。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>其他</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>github</tag>
+      
+      <tag>hexo</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>github搜索</title>
+    <link href="/2021/12/13/github%E6%90%9C%E7%B4%A2/"/>
+    <url>/2021/12/13/github%E6%90%9C%E7%B4%A2/</url>
+    
+    <content type="html"><![CDATA[<h1 id="Github搜索技巧"><a href="#Github搜索技巧" class="headerlink" title="Github搜索技巧"></a>Github搜索技巧</h1><h2 id="in-name"><a href="#in-name" class="headerlink" title="in:name"></a>in:name</h2><pre><code class="hljs">按照项目名称搜索eg：搜索项目名称里带mall(商城)的项目    in:name mall</code></pre><h2 id="in-description"><a href="#in-description" class="headerlink" title="in:description"></a>in:description</h2><pre><code class="hljs">按照描述搜索eg：搜索描述里带spring的项目    in:description spring</code></pre><h2 id="in-readme"><a href="#in-readme" class="headerlink" title="in:readme"></a>in:readme</h2><pre><code class="hljs">按照项目介绍进行搜索eg：搜索项目介绍里带spring的项目    in:readme spring</code></pre><h2 id="stars"><a href="#stars" class="headerlink" title="stars"></a>stars</h2><pre><code class="hljs">关注数eg：搜索项目名称里带spring，并且关注度超过1500的项目     in:name spring stars:&gt;3000</code></pre><h2 id="forks"><a href="#forks" class="headerlink" title="forks"></a>forks</h2><pre><code class="hljs">克隆（分支）代码的数量eg：搜索项目名称里带spring，并且克隆超过1500的项目    in:name spring forks:&gt;3000</code></pre><h2 id="pushed"><a href="#pushed" class="headerlink" title="pushed"></a>pushed</h2><pre><code class="hljs">项目更新时间eg：搜索项目名称里带spring，并且2021年有更新的项目     in:name spring pushed:&gt;2021-01-01</code></pre><h2 id="language"><a href="#language" class="headerlink" title="language"></a>language</h2><pre><code class="hljs">编程语言eg：用python实现的爬虫项目，今年还在更新的     in:description 爬虫 language:python pushed:&gt;2021-01-01</code></pre><h2 id="topic"><a href="#topic" class="headerlink" title="topic"></a>topic</h2><pre><code class="hljs">根据话题关联性进行搜索eg：和spring相关的项目    topic:spring</code></pre>]]></content>
+    
+    
+    <categories>
+      
+      <category>其他</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>github</tag>
+      
+      <tag>技巧</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>call、apply、bind浅析</title>
+    <link href="/2021/12/13/call%E3%80%81apply%E3%80%81bind%E6%B5%85%E6%9E%90/"/>
+    <url>/2021/12/13/call%E3%80%81apply%E3%80%81bind%E6%B5%85%E6%9E%90/</url>
+    
+    <content type="html"><![CDATA[<h1 id="call-thisArgs-args…"><a href="#call-thisArgs-args…" class="headerlink" title="call(thisArgs [,args…])"></a>call(thisArgs [,args…])</h1><p>该方法可以传递一个thisArgs参数和一个参数列表，thisArgs 指定了函数在运行期的调用者，也就是函数中的 this 对象，而参数列表会被传入调用函数中。<br>thisArgs 的取值有以下四种情况：</p><ul><li>不传，或者传null,undefined， 函数中的 this 指向window对象</li><li>传递另一个函数的函数名，函数中的 this 指向这个函数的引用</li><li>传递字符串、数值或布尔类型等基础类型，函数中的 this 指向其对应的包装对象，如 String、Number、Boolean</li><li>传递一个对象，函数中的 this 指向这个对象</li></ul><p>使用实例</p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">var</span> a = &#123;<br>    <span class="hljs-attr">name</span>:<span class="hljs-string">&#x27;onepixel&#x27;</span>, <span class="hljs-comment">//定义a的属性</span><br>        <span class="hljs-title function_">say</span>(<span class="hljs-params"></span>)&#123; <span class="hljs-comment">//定义a的方法</span><br>            <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;Hi,I&#x27;m function a!&quot;</span>);<br>            &#125;<br>&#125;;<br><span class="hljs-keyword">function</span> <span class="hljs-title function_">b</span>(<span class="hljs-params">name</span>)&#123;<br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;Post params: &quot;</span>+ name);<br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;I&#x27;m &quot;</span>+<span class="hljs-variable language_">this</span>.<span class="hljs-property">name</span>);<br>    <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">say</span>();<br>&#125;<br>b.<span class="hljs-title function_">call</span>(a,<span class="hljs-string">&#x27;test&#x27;</span>);<br><br>&gt;&gt;&gt;<br><span class="hljs-title class_">Post</span> <span class="hljs-attr">params</span>: test<br>I<span class="hljs-string">&#x27;m onepixel</span><br><span class="hljs-string">I&#x27;</span>m <span class="hljs-keyword">function</span> a!<br></code></pre></td></tr></table></figure><blockquote><p>当执行b.call 时，字符串test作为参数传递给了函数b,由于call的作用，函数b中的this指向了对象a, 因此相当于调用了对象a上的函数b,而实际上a中没有定义b 。</p></blockquote><hr><h1 id="apply-thisArgs-args"><a href="#apply-thisArgs-args" class="headerlink" title="apply(thisArgs [,args[]])"></a>apply(thisArgs [,args[]])</h1><p> apply 和 call 的唯一区别是第二个参数的传递方式不同，apply 的第二个参数必须是一个数组（或者类数组），而 call 允许传递一个参数列表。值得你注意的是，虽然 apply 接收的是一个参数数组，但在传递给调用函数时，却是以参数列表的形式传递</p><hr><h1 id="bind-thisArgs-args…"><a href="#bind-thisArgs-args…" class="headerlink" title="bind(thisArgs [,args…])"></a>bind(thisArgs [,args…])</h1><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">var</span> obj = &#123;<span class="hljs-attr">name</span>:<span class="hljs-string">&#x27;onepixel&#x27;</span>&#125;;<br><span class="hljs-comment">/**</span><br><span class="hljs-comment">* 给document添加click事件监听，并绑定onClick函数</span><br><span class="hljs-comment">* 通过bind方法设置onClick的this为obj，并传递参数p1,p2</span><br><span class="hljs-comment">*/</span><br><span class="hljs-variable language_">document</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>,<br>                            onClick.<span class="hljs-title function_">bind</span>(obj,<span class="hljs-string">&#x27;p1&#x27;</span>,<span class="hljs-string">&#x27;p2&#x27;</span>),<br>                            <span class="hljs-literal">false</span>);<br><span class="hljs-comment">//当点击网页时触发并执行</span><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">onClick</span>(<span class="hljs-params">a,b</span>)&#123;<br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<br>    <span class="hljs-variable language_">this</span>.<span class="hljs-property">name</span>, <span class="hljs-comment">//onepixel</span><br>    a, <span class="hljs-comment">//p1</span><br>    b  <span class="hljs-comment">//p2</span><br>    )<br>&#125;<br></code></pre></td></tr></table></figure><blockquote><p>一旦函数通过bind传递了有效的this对象，则该函数在运行期的this将指向这个对象，即使通过call或apply来试图改变this的指向也是徒劳的。</p></blockquote>]]></content>
+    
+    
+    <categories>
+      
+      <category>Javascript</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>函数</tag>
+      
+    </tags>
     
   </entry>
   
