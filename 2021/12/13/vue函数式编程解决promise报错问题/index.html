@@ -13,27 +13,27 @@
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
   <meta name="theme-color" content="#2f4154">
-  <meta name="author" content="John Doe">
+  <meta name="author" content="Jessn">
   <meta name="keywords" content="">
   
     <meta name="description" content="问题 出现原因对于目前的VueRouter的版本而言，其底层时用的promise函数写的，而promise函数执行需要两个回调，一个成功的回调，和一个失败的回调。vue底层设计时声明式编程已经完善了promise的回调，而函数式编程并没有进行维护，此时当多次触发函数时就会出现上图错误 解决方法重写push、replace方法 12345678910111213&#x2F;&#x2F;重写vueRouter原型对象的p">
 <meta property="og:type" content="article">
 <meta property="og:title" content="vue函数式编程解决promise报错问题">
-<meta property="og:url" content="http://example.com/2021/12/13/vue%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B%E8%A7%A3%E5%86%B3promise%E6%8A%A5%E9%94%99%E9%97%AE%E9%A2%98/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:url" content="https://jessnzz.github.io/2021/12/13/vue%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B%E8%A7%A3%E5%86%B3promise%E6%8A%A5%E9%94%99%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="Jessn′s blog">
 <meta property="og:description" content="问题 出现原因对于目前的VueRouter的版本而言，其底层时用的promise函数写的，而promise函数执行需要两个回调，一个成功的回调，和一个失败的回调。vue底层设计时声明式编程已经完善了promise的回调，而函数式编程并没有进行维护，此时当多次触发函数时就会出现上图错误 解决方法重写push、replace方法 12345678910111213&#x2F;&#x2F;重写vueRouter原型对象的p">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/img/promise.png">
+<meta property="og:image" content="https://jessnzz.github.io/img/promise.png">
 <meta property="article:published_time" content="2021-12-13T13:39:59.000Z">
 <meta property="article:modified_time" content="2021-12-13T13:39:59.000Z">
-<meta property="article:author" content="John Doe">
+<meta property="article:author" content="Jessn">
 <meta property="article:tag" content="问题">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/img/promise.png">
+<meta name="twitter:image" content="https://jessnzz.github.io/img/promise.png">
   
   
   
-  <title>vue函数式编程解决promise报错问题 - Hexo</title>
+  <title>vue函数式编程解决promise报错问题 - Jessn′s blog</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -71,7 +71,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.2","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"jessnzz.github.io","root":"/","version":"1.9.2","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -312,7 +312,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/Javascript/" class="category-chain-item">Javascript</a>
+  <a href="/categories/Vue/" class="category-chain-item">Vue</a>
   
   
 
@@ -322,7 +322,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/Vue/" class="category-chain-item">Vue</a>
+  <a href="/categories/Javascript/" class="category-chain-item">Javascript</a>
   
   
 
@@ -350,13 +350,13 @@
   <div class="license-box my-3">
     <div class="license-title">
       <div>vue函数式编程解决promise报错问题</div>
-      <div>http://example.com/2021/12/13/vue函数式编程解决promise报错问题/</div>
+      <div>https://jessnzz.github.io/2021/12/13/vue函数式编程解决promise报错问题/</div>
     </div>
     <div class="license-meta">
       
         <div class="license-meta-item">
           <div>作者</div>
-          <div>John Doe</div>
+          <div>Jessn</div>
         </div>
       
       

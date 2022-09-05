@@ -13,27 +13,27 @@
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
   <meta name="theme-color" content="#2f4154">
-  <meta name="author" content="John Doe">
+  <meta name="author" content="Jessn">
   <meta name="keywords" content="">
   
     <meta name="description" content="为了解决这个问题，我们首先需要了解最佳异步请求的时机 最佳异步请求的时机我们到底该在什么情况下选择created,而又在什么情况下选择updated?  对于作为子组件被调用的组件里，异步请求应当在mounted里调用，因为这个时候子组件可能需要涉及到对dom的操作； 对于页面级组件，当我们需要使用ssr（服务端渲染）的时候，只有created是可用的，所以这个时候请求数据只能用它； 对于页面级组">
 <meta property="og:type" content="article">
 <meta property="og:title" content="异步请求初始化时数据读取问题">
-<meta property="og:url" content="http://example.com/2021/12/26/%E5%BC%82%E6%AD%A5%E8%AF%B7%E6%B1%82%E5%88%9D%E5%A7%8B%E5%8C%96%E6%97%B6%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%8F%96%E9%97%AE%E9%A2%98/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:url" content="https://jessnzz.github.io/2021/12/26/%E5%BC%82%E6%AD%A5%E8%AF%B7%E6%B1%82%E5%88%9D%E5%A7%8B%E5%8C%96%E6%97%B6%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%8F%96%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="Jessn′s blog">
 <meta property="og:description" content="为了解决这个问题，我们首先需要了解最佳异步请求的时机 最佳异步请求的时机我们到底该在什么情况下选择created,而又在什么情况下选择updated?  对于作为子组件被调用的组件里，异步请求应当在mounted里调用，因为这个时候子组件可能需要涉及到对dom的操作； 对于页面级组件，当我们需要使用ssr（服务端渲染）的时候，只有created是可用的，所以这个时候请求数据只能用它； 对于页面级组">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/img/%E6%A8%A1%E6%9D%BF%E5%88%9D%E5%A7%8B%E5%8C%96%E6%97%B6%E6%B8%B2%E6%9F%93%E9%94%99%E8%AF%AF.png">
+<meta property="og:image" content="https://jessnzz.github.io/img/%E6%A8%A1%E6%9D%BF%E5%88%9D%E5%A7%8B%E5%8C%96%E6%97%B6%E6%B8%B2%E6%9F%93%E9%94%99%E8%AF%AF.png">
 <meta property="article:published_time" content="2021-12-26T08:13:33.000Z">
 <meta property="article:modified_time" content="2021-12-26T08:13:33.000Z">
-<meta property="article:author" content="John Doe">
+<meta property="article:author" content="Jessn">
 <meta property="article:tag" content="问题">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/img/%E6%A8%A1%E6%9D%BF%E5%88%9D%E5%A7%8B%E5%8C%96%E6%97%B6%E6%B8%B2%E6%9F%93%E9%94%99%E8%AF%AF.png">
+<meta name="twitter:image" content="https://jessnzz.github.io/img/%E6%A8%A1%E6%9D%BF%E5%88%9D%E5%A7%8B%E5%8C%96%E6%97%B6%E6%B8%B2%E6%9F%93%E9%94%99%E8%AF%AF.png">
   
   
   
-  <title>异步请求初始化时数据读取问题 - Hexo</title>
+  <title>异步请求初始化时数据读取问题 - Jessn′s blog</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -71,7 +71,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.2","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"jessnzz.github.io","root":"/","version":"1.9.2","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -356,13 +356,13 @@
   <div class="license-box my-3">
     <div class="license-title">
       <div>异步请求初始化时数据读取问题</div>
-      <div>http://example.com/2021/12/26/异步请求初始化时数据读取问题/</div>
+      <div>https://jessnzz.github.io/2021/12/26/异步请求初始化时数据读取问题/</div>
     </div>
     <div class="license-meta">
       
         <div class="license-meta-item">
           <div>作者</div>
-          <div>John Doe</div>
+          <div>Jessn</div>
         </div>
       
       
